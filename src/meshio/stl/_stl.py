@@ -203,6 +203,12 @@ def write(filename, mesh, binary=False):
     else:
         normals = np.cross(pts[:, 1] - pts[:, 0], pts[:, 2] - pts[:, 0])
         nrm = np.sqrt(np.einsum("ij,ij->i", normals, normals))
+        discard = nrm == 0.0
+        if np.any(discard):
+            warn(f"Found zero normals for {np.sum(discard)} triangles. Discarding.")
+            pts = pts[~discard]
+            normals = normals[~discard]
+            nrm = nrm[~discard]
         normals = (normals.T / nrm).T
 
     fun = _write_binary if binary else _write_ascii
